@@ -1,0 +1,14 @@
+<h2>Добавить новое вычисление</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Вычислить и сохранить">
+</form>
+
+<h1>История вычислений</h1>
+<ul>
+  {% for calculation in history %}
+    <li>{{ calculation.expression }} = {{ calculation.result }}</li>
+  {% endfor %}
+</ul>
+
