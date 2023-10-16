@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from django.views import View
 
 from .forms import CalcForm
+from .calculation_logic import evaluate_expression
 
 
 class MainView(View):
@@ -21,7 +22,7 @@ class MainView(View):
         if form.is_valid():
             history.append({
                 'expression': form.cleaned_data['expression'],
-                'result': eval(form.cleaned_data['expression'])
+                'result': evaluate_expression(form.cleaned_data['expression'])
             })
             request.session['history'] = history
             return redirect('/')
