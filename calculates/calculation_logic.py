@@ -22,7 +22,7 @@ class Stack:
 
 def split_space(expression):
     """
-    Перевод из инфиксной в постфиксную запись
+    Разделение пробелами
     "20+5*(2-4)" -> "20 + 5 * ( 2 - 4 )"
     """
     formatted_expression = re.sub(r'([\+\-\*/\(\)])', r' \1 ', expression)
