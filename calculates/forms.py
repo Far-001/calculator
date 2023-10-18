@@ -5,7 +5,7 @@ from .calculation_logic import evaluate_expression
 
 
 def math_expression_validator(value):
-    re_rule = '0123456789+-*/() '
+    re_rule = '0123456789+-*/(). '
 
     for sim in value:
         if sim not in re_rule:

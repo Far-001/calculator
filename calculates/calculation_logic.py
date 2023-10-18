@@ -2,6 +2,7 @@ import re
 
 
 class Stack:
+    """Структура стека для вычисления"""
     def __init__(self):
         self.items = []
 
@@ -20,20 +21,56 @@ class Stack:
         return len(self.items) == 0
 
 
+def isfloat(value):
+    """Флаг численного значения"""
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
 def split_space(expression):
     """
     Разделение пробелами
     "20+5*(2-4)" -> "20 + 5 * ( 2 - 4 )"
     """
+    # Разделяем пробелами по знакам
     formatted_expression = re.sub(r'([\+\-\*/\(\)])', r' \1 ', expression)
-    formatted_expression = ' '.join(formatted_expression.split())
+    # Предыдущее значение (по умолчанию "0")
+    prev_item = '0'
+    # Флаг отрицательного числа
+    add_sub = False
+    # Получаем список операторов и операндов
+    list_expression = formatted_expression.split()
+
+    # Определение отрицательных чисел
+    for item in range(len(list_expression)):
+        # Если найден минус, а предыдущий элемент был операндом или его не было
+        if list_expression[item] == '-' and prev_item in '+-*/(0':
+            # Меняем флаг
+            add_sub = True
+        # Если флаг истина, а предыдущий элемент был минус
+        if add_sub and prev_item == '-':
+            # Добавляем минус к элементу
+            list_expression[item] = '-' + list_expression[item]
+            # Удаляем минус из предыдущего элемента
+            list_expression[item - 1] = ''
+            # Возвращаем флаг
+            add_sub = False
+        # Фиксируем предыдущее значение
+        prev_item = list_expression[item]
+
+    # Собираем в строку
+    formatted_expression = ' '.join(list_expression)
+
     return formatted_expression
 
 
 def infix_to_postfix(expression):
     """
     Перевод из инфиксной в постфиксную запись
-    "20 + 5 * ( 2 - 4 )" -> "3 5 2 4 - * +"
+    "20 + 5 * ( 2 - 4 )" -> "20 5 2 4 - * +"
     """
     # Операторы и их приоритеты
     precedence = {'+': 1, '-': 1, '*': 2, '/': 2}
@@ -44,13 +81,13 @@ def infix_to_postfix(expression):
 
     for char in expression.split():
         # Разбиение входного инфиксного выражения на токены
-        if char.isnumeric():
+        if isfloat(char):
             # Если токен - число, добавляем его в вывод
             output.append(char)
         elif char in "+-*/":
             # Если токен - оператор
-            while (not stack.is_empty() and stack.items[-1] in "+-*/" and
-                   precedence[char] <= precedence[stack.items[-1]]):
+            while (not stack.is_empty() and stack.items[-1] in "+-*/"
+                   and precedence[char] <= precedence[stack.items[-1]]):
                 # Если в стеке есть операторы с большим или
                 # равным приоритетом, переносим их в вывод
                 output.append(stack.pop())
@@ -108,6 +145,6 @@ def calculate(post_str):
 
 
 def evaluate_expression(expression):
-    # Вычисление выражения с использованием функций
+    """Вычисление выражения с использованием функций"""
     result = calculate(infix_to_postfix(split_space(expression)))
     return result
