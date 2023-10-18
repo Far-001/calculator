@@ -36,31 +36,20 @@ def split_space(expression):
     "20+5*(2-4)" -> "20 + 5 * ( 2 - 4 )"
     """
     # Разделяем пробелами по знакам
-    formatted_expression = re.sub(r'([\+\-\*/\(\)])', r' \1 ', expression)
+    formatted_expression = re.sub(r'([\+\-\~\*/\(\)])', r' \1 ', expression)
     # Предыдущее значение (по умолчанию "0")
     prev_item = '0'
-    # Флаг отрицательного числа
-    add_sub = False
     # Получаем список операторов и операндов
     list_expression = formatted_expression.split()
 
-    # Определение отрицательных чисел
+    # Определение унарных минусов
     for item in range(len(list_expression)):
         # Если найден минус, а предыдущий элемент был операндом или его не было
         if list_expression[item] == '-' and prev_item in '+-*/(0':
-            # Меняем флаг
-            add_sub = True
-        # Если флаг истина, а предыдущий элемент был минус
-        if add_sub and prev_item == '-':
-            # Добавляем минус к элементу
-            list_expression[item] = '-' + list_expression[item]
-            # Удаляем минус из предыдущего элемента
-            list_expression[item - 1] = ''
-            # Возвращаем флаг
-            add_sub = False
+            # то это унарный минус
+            list_expression[item] = '~'
         # Фиксируем предыдущее значение
         prev_item = list_expression[item]
-
     # Собираем в строку
     formatted_expression = ' '.join(list_expression)
 
@@ -73,7 +62,7 @@ def infix_to_postfix(expression):
     "20 + 5 * ( 2 - 4 )" -> "20 5 2 4 - * +"
     """
     # Операторы и их приоритеты
-    precedence = {'+': 1, '-': 1, '*': 2, '/': 2}
+    precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '~': 3}
     # Список для вывода постфиксной нотации
     output = []
     # Стек для операторов
@@ -84,9 +73,9 @@ def infix_to_postfix(expression):
         if isfloat(char):
             # Если токен - число, добавляем его в вывод
             output.append(char)
-        elif char in "+-*/":
+        elif char in "+-*/~":
             # Если токен - оператор
-            while (not stack.is_empty() and stack.items[-1] in "+-*/"
+            while (not stack.is_empty() and stack.items[-1] in "+-*/~"
                    and precedence[char] <= precedence[stack.items[-1]]):
                 # Если в стеке есть операторы с большим или
                 # равным приоритетом, переносим их в вывод
@@ -125,6 +114,8 @@ def calculate(post_str):
         "-": lambda a, b: a - b,
         "*": lambda a, b: a * b,
         "/": lambda a, b: a / b,
+        "~": lambda a: 0 - a,
+
     }
     # Перебираем входные данные
     for item in item_list:
@@ -136,6 +127,9 @@ def calculate(post_str):
             value1 = stack.pop()
             # Выполняем соответствующее действие и возврат результата в стек
             stack.push(dict_operand[item](value1, value2))
+        elif item == '~':
+            value1 = stack.pop()
+            stack.push(dict_operand[item](value1))
         else:
             # Если на входе значение
             # Заносим его в стек
