@@ -1,20 +1,22 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .calculation_logic import evaluate_expression
+from .calculation_logic import ExpressionCalculation
 
 
-def math_expression_validator(value):
-    re_rule = '0123456789+-*/(). '
+def math_expression_validator(expression):
+    """Валидация входного выражения"""
+    re_rule = '^0123456789+-*/(). '
 
-    for sim in value:
-        if sim not in re_rule:
+    for simvol in expression:
+        if simvol not in re_rule:
             raise ValidationError(
                 'Недопустимый символ в математическом выражении'
             )
 
     try:
-        evaluate_expression(value)
+        calculation = ExpressionCalculation(expression)
+        calculation.get_result()
     except Exception:
         raise ValidationError(
             'Ошибка при вычислении математического выражения'
@@ -22,6 +24,7 @@ def math_expression_validator(value):
 
 
 class CalcForm(forms.Form):
+    """Создание формы"""
     expression = forms.CharField(
         max_length=100,
         validators=[math_expression_validator],
